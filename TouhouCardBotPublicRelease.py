@@ -134,6 +134,36 @@ def on_message(message):
 							userPointsResult =  cursor.fetchone()
 							userPoints = userPointsResult[0]
 
+							# okay so now we need the rarity of the card
+							if rarityGet == 1:
+								userPoints = userPoints + 10
+							elif rarityGet == 2:
+								userPoints = userPoints + 20
+							elif rarityGet == 3:
+								userPoints = userPoints + 30
+							elif rarityGet == 4:
+								userPoints = userPoints + 40
+							elif rarityGet == 5:
+								userPoints = userPoints + 50
+
+							addPointsBackQuery = "UPDATE points FROM userlist where user=\'%s\'" % (author.id)
+							cursor = db.cursor()
+							cursor.execute(addPointsBackQuery)
+							# points added in
+
+						else:
+							print("User does not have this card, let's add it to their list.")
+							# so we have to define hasCardString here
+							hasCardString = "hasCard%s" % (personCardNum)
+							# well actually looking back on it this code is redundant lmao
+							# will fix in the optimization patch
+							addNewCardString = "INSERT INTO Alice (user, %s) VALUES (%s, 1)" % (hasCardString, author.id)
+							cursor = db.cursor()
+							cursor.execute(addNewCardString)
+							db.commit()
+
+
+
 
 
 
