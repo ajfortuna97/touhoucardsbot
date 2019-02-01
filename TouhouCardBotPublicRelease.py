@@ -4,6 +4,7 @@ import asyncio
 import random
 import ctypes
 import io
+import os
 #from discord import opus
 #import time
 from time import gmtime, strftime
@@ -16,7 +17,7 @@ import mysql.connector
 
 client = discord.Client()
 
-db = mysql.connector.connect(user='[user]', password='[database password]', host='localhost', database = 'touhoucards')
+db = mysql.connector.connect(user='[user]', password='[database password]', host='[host address]', database = 'touhoucards')
 
 # let's define the big list of people
 touhouCharList = ['alice', 'aya', 'byakuren', 'chen', 'cirno', 'clownpiece', 'daiyousei', 'eirin', 'flandre', 'hina', 'junko', 'kaguya', 'kanako', 'keine', 'koakuma', 'kogasa', 'koishi', 'kokoro', 'komachi', 'letty', 'marisa', 'meiling', 'mima', 'mokou', 'momiji', 'mystia', 'nitori', 'nue', 'parsee', 'patchy', 'ran', 'reimu', 'reisen', 'remilia', 'rinnosuke', 'rumia', 'sakuya', 'sanae', 'satori', 'shiki', 'shin', 'suwako', 'tancirno', 'tewi', 'utsuho', 'wriggle', 'youki', 'youmu', 'yukari', 'yuuka', 'yuyuko', 'zun']
@@ -27,44 +28,39 @@ def on_message(message):
 	print("Got message.")
 
 	if(message.content.startswith("quit")):
+		db.commit()
 		sys.exit()
 	elif(message.content.startswith("!listcards")):
 		cardListString = "You have these cards:\n"
 		amountOfCardsYouHave = 0
 		author = message.author
 
+			# new easy way!
+			# select all for yourself in hascard
+			# and then also join to cardcatalogue
+			# to easily get names
 
-		for name in touhouCharList:
-			getAmountOfCardsQuery = "SELECT COUNT(*) FROM cardcatalogue WHERE name = \'%s\'" % (name)
-			cursor = db.cursor(buffered=True)
-			cursor.execute(getAmountOfCardsQuery)
-			getAmountOfCardsResult = cursor.fetchone()
+		getAllYourCards = "SELECT cardcatalogue.name, cardcatalogue.idNum FROM hascard JOIN cardcatalogue ON hascard.cardID = cardcatalogue.idNum WHERE userID = \'%s\'" % author.id
+		cursor = db.cursor(buffered=True)
+		cursor.execute(getAllYourCards)
+		getAllYourCardsResult = cursor.fetchone()
 
-			if(getAmountOfCardsResult == None):
-				pass # just do nothing
+		print(cardListString)
+
+		while(getAllYourCardsResult != None):
+			# get the name and card ID num
+			nameOfCard = getAllYourCardsResult[0]
+			idOfCard = getAllYourCardsResult[1]
+
+			if amountOfCardsYouHave == 0:
+				cardListString = cardListString + "%s%d" % (nameOfCard, idOfCard)
+				amountOfCardsYouHave = amountOfCardsYouHave + 1
 			else:
-				amountOfCardsForName = getAmountOfCardsResult[0] # gives us the amount of cards for us
+				cardListString = cardListString + ", %s%d" % (nameOfCard, idOfCard)
+				amountOfCardsYouHave = amountOfCardsYouHave + 1
+			getAllYourCardsResult = cursor.fetchone()
 
-				# so now we need to go check each table
-				getUserCardsForName = "SELECT * FROM %s WHERE user = \'%s\'" % (name, author.id)
-				cursor = db.cursor(buffered=True)
-				cursor.execute(getUserCardsForName)
-				getUserCardsForNameResult = cursor.fetchone()
-
-				if(getUserCardsForNameResult == None):
-					pass
-				else:
-					# okay this means that we have at least one card of this type
-					for x in range(1, amountOfCardsForName):
-						if getUserCardsForNameResult[x] == 1:
-							print("You have card %s%d" % (name, x))
-
-							if amountOfCardsYouHave == 0:
-								cardListString = cardListString + "%s%d" % (name, x)
-								amountOfCardsYouHave = amountOfCardsYouHave + 1
-							else:
-								cardListString = cardListString + ", %s%d" % (name, x)
-								amountOfCardsYouHave = amountOfCardsYouHave + 1
+		#print(cardListString)
 
 		print(cardListString)
 		#await client.send_message(message.channel, '%s' % cardListString)
@@ -109,7 +105,7 @@ def on_message(message):
 				# so, we can probably start from the end of the string and work backwards
 				# or we can just step through it
 				
-				checkIfHasCardQuery = "SELECT * FROM %s WHERE user = \'%s\'" % (charName, author.id)
+				checkIfHasCardQuery = "SELECT * FROM hascard WHERE userID = \'%s\' AND cardID = %s" % (author.id, charNum)
 				cursor = db.cursor(buffered=True)
 				cursor.execute(checkIfHasCardQuery)
 
@@ -118,36 +114,24 @@ def on_message(message):
 				if(checkCard==None): # they don't have the card at all
 					print("You don't have this card.")
 				else:
-					# so they have a card of this type
-					# now we need to check if they have it
-					charNumInt = int(charNum)
-					if(checkCard[charNumInt]==0):
-						print("You don't have that card.")
-					else:
-						print("You do have that card!")
-						# so now we have to go to the cardcatalogue to get its ID number
-						getCardIDQuery = "SELECT idNum FROM cardcatalogue WHERE name=\'%s\' AND personCardNum=%d" % (charName, charNumInt)
-						cursor = db.cursor(buffered=True)
-						cursor.execute(getCardIDQuery)
-						checkCard = cursor.fetchone()
-						# don't have to do a none check because we KNOW this card exists at this point
-						cardID = checkCard[0]
-						imageFileName = "%s %d.png" % (charName, cardID)
-						print(imageFileName)
+					# they do have the card here, so go and get it
+					#cardID = checkCard[0]
+					imageFileName = "%s %s.png" % (charName, charNum)
+					print(imageFileName)
 
-						os.chdir("pictures")
-						os.chdir("%s" % (charName))
-						yield from client.send_file(message.channel, "%s" % imageFileName)
-						os.chdir("..")
-						os.chdir("..")
+					os.chdir("pictures")
+					os.chdir("%s" % (charName))
+					yield from client.send_file(message.channel, "%s" % imageFileName)
+					os.chdir("..")
+					os.chdir("..")
 
-	else:
+	else: # BIG MASSIVE LOOP ON ROLLING NEW CARDS RANDOMLY
 		author = message.author
 		if author.id == '218794301893771264': # prevents bot from hitting its own messages
 			pass
 		else:
 			messageServer = message.server
-			if messageServer.id == '211120484731977728':  # this is to limit where the bot can go, you put your own server ID here
+			if messageServer.id == '[server ID]':  # this is to limit where the bot can go, you put your own server ID here
 				# 1/1000 chance to get a card
 				queryString = "SELECT * FROM userlist WHERE user = " + author.id
 				print(queryString + "\n")
@@ -204,43 +188,90 @@ def on_message(message):
 
 					#if(getCard==1000): # you get a random card
 					if True is True: # this is for debugging
-						getCardNamesCount = "SELECT COUNT(*) FROM (SELECT name FROM cardcatalogue) AS getName"
-						cursor = db.cursor(buffered=True)
-						cursor.execute(getCardNamesCount)
-						cardTypesResult = cursor.fetchone()
-						totalCardTypes = cardTypesResult[0]
+						#getCardNamesCount = "SELECT COUNT(*) FROM (SELECT name FROM cardcatalogue) AS getName"
+						#cursor = db.cursor(buffered=True)
+						#cursor.execute(getCardNamesCount)
+						#cardTypesResult = cursor.fetchone()
+						#totalCardTypes = cardTypesResult[0]
 
-						cardNameRolled = random.randint(1, totalCardTypes)
-						cardNameRolled = 1 # debugging line
+						cardNameRolled = random.randint(0, len(touhouCharList) -1) # due to 0 indexing
+						#cardNameRolled = 1 # debugging line
 						print("You rolled card type %d" % cardNameRolled)
 
 
 						# BIG DECIDING PORTION ON WHO YOU GET HERE
 						touhouYouGet = ""
-						if(cardNameRolled==1): # Alice
-							touhouYouGet = "Alice"
+						#if(cardNameRolled==1): # Alice
+						#	touhouYouGet = "Alice"
+						#if(cardNameRolled==2): # Aya
+						#	touhouYouGet = "Aya"
+						#if(cardNameRolled==3): # Byakuren
+						#	touhouYouGet = "Byakuren"
 							# NOW YOU GACHA AGAIN FOR RARITY
+						# or you could not be a scrub and realize that it's a big array
+						# so you can literally just do
+						touhouYouGet = touhouCharList[cardNameRolled-1]
+
 
 
 
 						# handles rarity and the rest of the card business
 
-						rarityGet = random.randint(1,5)
-						print("You rolled rarity %d" % rarityGet)
-						getTotalOfNamed = "SELECT COUNT(*) FROM cardcatalogue WHERE rarity = %s AND name = \'%s\'" % (rarityGet, touhouYouGet)
+						#rarityGet = random.randint(1,5)
+						rarityRoll = random.randint(1, 100)
+						rarityGet = 1
+
+						if(rarityRoll < 4): # i.e. 1-3, 3% UR rate
+							rarityGet = 5
+						elif (rarityRoll > 3 and rarityRoll < 15): # i.e. 4 through 14, 10% SSR rate
+							rarityGet = 4
+						elif (rarityRoll > 14 and rarityRoll < 36): # 15 to 35, 20% SR rate 
+							rarityGet = 3
+						elif (rarityRoll > 35 and rarityRoll < 66): # 36 to 65, 30% R rate
+							rarityGet = 2
+						else: # leaves you with 47% chance to get a rare on message
+							rarityGet = 1
+
+
+
+						print("You rolled a(n) %s card of rarity %d" % (touhouYouGet, rarityGet))
+						#getTotalOfNamed = "SELECT COUNT(*) FROM cardcatalogue WHERE rarity = %s AND name = \'%s\'" % (rarityGet, touhouYouGet)
+						getTotalOfNamed = "SELECT count FROM cardcounts WHERE personName = \'%s\' AND rarity = %s" % (touhouYouGet, rarityGet)
+						print(getTotalOfNamed)
 						cursor = db.cursor(buffered=True)
 						cursor.execute(getTotalOfNamed)
 						getTotalOfNamedResult = cursor.fetchone()
+
+						while(getTotalOfNamedResult == None):
+							print("Hold up, there's no cards of that rarity. We have to try again.\n");
+							# if there are no cards of the type you rolled
+							# keep rarity, roll a different person
+							cardNameRolled = random.randint(1, len(touhouCharList) -1)
+							touhouYouGet = touhouCharList[cardNameRolled-1] # get new person
+							#getTotalOfNamed = "SELECT COUNT(*) FROM cardcatalogue WHERE rarity = %s AND name = \'%s\'" % (rarityGet, touhouYouGet)
+							getTotalOfNamed = "SELECT count FROM cardcounts WHERE personName = \'%s\' AND rarity = %s" % (touhouYouGet, rarityGet)
+							cursor = db.cursor(buffered=True)
+							cursor.execute(getTotalOfNamed)
+							getTotalOfNamedResult = cursor.fetchone()
+							print("You rolled card type %d, which is %s\n" % (cardNameRolled, touhouYouGet))
+
+						# okay so this guarantees that you have a card
+
 						maxNumberOfType = getTotalOfNamedResult[0] # so if 1*s have 5 cards, this will give you five
+						print("There are %d cards of this type." % maxNumberOfType)
 						numCardGet = random.randint(1,maxNumberOfType) # okay so now we have which card you get
 						#cursor.fetchall() # more dumb workarounds
-						# okay so now we have to assign it
-						# so first we have to get its ID and stuff
-						#getReceivedCard = "SELECT * FROM cardcatalogue WHERE rarity = %s AND name = \'%s\' AND ROWNUM = %s" % (rarityGet, numCardGet, touhouYouGet)
-
-						getReceivedCard = "SELECT * FROM cardcatalogue WHERE rarity = %s AND name = \'%s\'" % (rarityGet, touhouYouGet)
 						
+						# how it SHOULD BE
+						# we have the number of cards of a type and rarity
+						# now we just need to randomly select one
+						# i.e. what we should do is
+						# roll a dice between 1 and whatever number there are
+						# and then just iterate down the table until we get there
+						# so if 1-5, roll 3, go to the third card
+
 						numCardGetCounter = 0
+						getReceivedCard = "SELECT * FROM cardcatalogue WHERE rarity = %s AND name = \'%s\'" % (rarityGet, touhouYouGet)
 						cursor = db.cursor(buffered=True)
 						cursor.execute(getReceivedCard)
 						db.commit()
@@ -249,77 +280,66 @@ def on_message(message):
 							cardYouJustGot = cursor.fetchone()
 							numCardGetCounter = numCardGetCounter + 1
 
-						# okay so this is a dumb workaround due to mySQL "unread results"
-						#cursor.fetchall() # done lol
-
-						personCardNum = cardYouJustGot[3]
-						# okay so now we have whether it's Alice2, Alice3, etc.
-						print("You got card %s%d" % (touhouYouGet, personCardNum)) 
-						# now we have to go to alice table
-						checkIfInPersonTable = "SELECT * FROM %s WHERE user = \'%s\'" % (touhouYouGet, author.id)
+						# from here, you just need to get the cardID, and then you can add it to the card catalogue
+						cardIDYouGet = cardYouJustGot[2] # field 3
+						# we should have everything now
+						# first we'll check if they actually already have this card
+						alreadyHasCard = "SELECT * FROM hascard WHERE userID = \'%s\' AND cardID = %s" % (author.id, cardIDYouGet)
 						cursor = db.cursor(buffered=True)
-						cursor.execute(checkIfInPersonTable)
+						cursor.execute(alreadyHasCard)
 						inPersonTableResults = cursor.fetchone()
 						db.commit()
 
 						if(inPersonTableResults == None):
-							# need to add them into the table
+							# you got a new card
 							print("Adding you to the table to get the card\n")
-							hasCardString = "hasCard%s" % (personCardNum) # so hasCard3
-							updaterString = "INSERT INTO %s (user, %s) VALUES (%s, 1)" % (touhouYouGet, hasCardString, author.id)
+							#hasCardString = "hasCard%s" % (personCardNum) # so hasCard3
+							#updaterString = "INSERT INTO %s (user, %s) VALUES (%s, 1)" % (touhouYouGet, hasCardString, author.id)
+
+							updaterString = "INSERT INTO hascard VALUES (\'%s\', %s)" % (author.id, cardIDYouGet)
 							cursor = db.cursor(buffered=True)
 							cursor.execute(updaterString)
 							db.commit()
 							# there we go, added them in
+							newCardString = "You got the %s%s card!" % (touhouYouGet, cardIDYouGet)
+							yield from client.send_message(message.channel, '%s' % newCardString)
 						else:
-							# this means they are already in there
-							# so first let's check if they already have it
-							hasCardString = "hasCard%s" % (personCardNum) # so hasCard3
+							# means they already have this card
+							# so refund points
+
 							print("You already have a card of this type.\n")
-							checkerString = "SELECT user, %s FROM %s WHERE user=\'%s\'" % (hasCardString, touhouYouGet, author.id)
+
+							print("User already has this card, refund points\n")
+							# NOW I GOTTA WRITE A QUERY TO GET YOUR FRIGGING POITNS
+							getPointsQuery = "SELECT points FROM userlist where user=\'%s\'" % (author.id)
 							cursor = db.cursor(buffered=True)
-							cursor.execute(checkerString)
-							checkerResult = cursor.fetchone()
-							alreadyHas = checkerResult[1]
+							cursor.execute(getPointsQuery)
+							userPointsResult =  cursor.fetchone()
+							userPoints = userPointsResult[0]
+
+							# okay so now we need the rarity of the card
+							if rarityGet == 1:
+								userPoints = userPoints + 10
+							elif rarityGet == 2:
+								userPoints = userPoints + 20
+							elif rarityGet == 3:
+								userPoints = userPoints + 30
+							elif rarityGet == 4:
+								userPoints = userPoints + 40
+							elif rarityGet == 5:
+								userPoints = userPoints + 50
+
+							addPointsBackQuery = "UPDATE userlist SET points = %d WHERE user = \'%s\'" % (userPoints, author.id)
+							cursor = db.cursor(buffered=True)
+							cursor.execute(addPointsBackQuery)
+							# points added in
 							db.commit()
 
-							if(alreadyHas==1): # that is to say, already has the card, refund some points
-								print("User already has this card, refund points\n")
-								# NOW I GOTTA WRITE A QUERY TO GET YOUR FRIGGING POITNS
-								getPointsQuery = "SELECT points FROM userlist where user=\'%s\'" % (author.id)
-								cursor = db.cursor(buffered=True)
-								cursor.execute(getPointsQuery)
-								userPointsResult =  cursor.fetchone()
-								userPoints = userPointsResult[0]
+							refundString = "You already have the card %s%d, refunding you %d points." % (touhouYouGet, personCardNum, userPoints) 
 
-								# okay so now we need the rarity of the card
-								if rarityGet == 1:
-									userPoints = userPoints + 10
-								elif rarityGet == 2:
-									userPoints = userPoints + 20
-								elif rarityGet == 3:
-									userPoints = userPoints + 30
-								elif rarityGet == 4:
-									userPoints = userPoints + 40
-								elif rarityGet == 5:
-									userPoints = userPoints + 50
+							yield from client.send_message(message.channel, '%s' % refundString)
 
-								addPointsBackQuery = "UPDATE userlist SET points = %d WHERE user = \'%s\'" % (userPoints, author.id)
-								cursor = db.cursor(buffered=True)
-								cursor.execute(addPointsBackQuery)
-								# points added in
-								db.commit()
 
-							else:
-								print("User does not have this card, let's add it to their list.\n")
-								# so we have to define hasCardString here
-								hasCardString = "hasCard%s" % (personCardNum)
-								# well actually looking back on it this code is redundant lmao
-								# will fix in the optimization patch
-								addNewCardString = "UPDATE %s SET %s = 1 WHERE user = \'%s\'" % (touhouYouGet, hasCardString, author.id) #(user, %s) VALUES (%s, 1)" % (hasCardString, author.id)"
-								cursor = db.cursor(buffered=True)
-								cursor.execute(addNewCardString)
-								db.commit()
 
 
 
@@ -336,10 +356,8 @@ def on_message(message):
 
 
 
-
-
-#client.login('[login email]', '[bot password]')
-#client.run('[DISCORD BOT TOKEN')
+#client.login('[login email]', '[login password]') # NOT USABLE AS OF LATEST DISCORD.PY RELEASE, if i read it right
+#client.run('[DISCORD BOT TOKEN]')
 db.commit()
 db.close()
 print("Bot offline.\n")
