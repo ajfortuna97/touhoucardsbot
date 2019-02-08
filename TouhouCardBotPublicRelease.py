@@ -17,7 +17,20 @@ import mysql.connector
 
 client = discord.Client()
 
-db = mysql.connector.connect(user='[user]', password='[password]', host='[IP of server]', database = 'touhoucards')
+configReader = open("bot.config", "r")
+
+dbUser = configReader.readline()
+dbPass = configReader.readline()
+dbAddress = configReader.readline()
+dbPort = configReader.readline()
+dbDB = configReader.readline()
+botToken = configReader.readline()
+
+configReader.close()
+dbPass = dbPass.rstrip()
+
+db = mysql.connector.connect(user=dbUser, password=dbPass, host=dbAddress, port = dbPort, database = dbDB)
+
 
 # let's define the big list of people
 touhouCharList = ['alice', 'aya', 'byakuren', 'chen', 'cirno', 'clownpiece', 'daiyousei', 'eirin', 'flandre', 'hina', 'junko', 'kaguya', 'kanako', 'keine', 'koakuma', 'kogasa', 'koishi', 'kokoro', 'komachi', 'letty', 'marisa', 'meiling', 'mima', 'mokou', 'momiji', 'mystia', 'nitori', 'nue', 'parsee', 'patchy', 'ran', 'reimu', 'reisen', 'remilia', 'rinnosuke', 'rumia', 'sakuya', 'sanae', 'satori', 'shiki', 'shin', 'suwako', 'tancirno', 'tewi', 'utsuho', 'wriggle', 'youki', 'youmu', 'yukari', 'yuuka', 'yuyuko', 'zun']
@@ -189,8 +202,12 @@ async def on_message(message):
 	print("Got message.")
 
 	if(message.content.startswith("quit")):
+		# trying to figure out how to gracefully exit but
+		# for now this'll have to do
+		# if I use close() or logout() it throws a Task was destroyed but it is pending
 		db.commit()
-		sys.exit()
+		sys.exit()	
+		
 	elif(message.content.startswith("!listcards")):
 		cardListString = "You have these cards:\n"
 		amountOfCardsYouHave = 0
@@ -394,23 +411,13 @@ async def on_message(message):
 
 
 
-
-
-
-
-
-
-
-
-
-
-#client.login('[login email]', '[password]')
 def main():
 	print("Executing main method.")
-	client.run('[Discord Bot Token]')
+	client.run(botToken)
 	db.commit()
 	db.close()
 	print("Bot offline.\n")
+	
 
 main()
 
