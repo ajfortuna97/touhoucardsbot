@@ -31,3 +31,7 @@ And so, here we are, with me attempting to add in features like:
 * And any additional features we decide to come up with as I try to code this
 
 I'll list the full set of characters on the trading cards when I get the database fully up and running, since until all tables are created it's prone to change.
+
+# The To-Do List
+* Trading features (can exchange cards and credits)
+* Shop feature (refreshes daily)
