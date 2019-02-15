@@ -220,6 +220,7 @@ async def create_user(author):
 @asyncio.coroutine
 
 async def on_message(message):
+	global db
 	print("Got message.")
 	# TODO: Add code to reconnect if bot goes too long without hitting server
 	if not(db.is_connected()):
