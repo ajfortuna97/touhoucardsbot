@@ -444,7 +444,7 @@ async def on_message(message):
 			pass
 		else:
 			messageServer = message.server
-			if messageServer.id == '211120484731977728':  # this is to limit where the bot can go, you put your own server ID here
+			if messageServer.id == '211120484731977728':  # this is to limit where the bot can go, you put your own server ID here 
 				# 1/1000 chance to get a card
 				queryString = "SELECT * FROM userlist WHERE user = " + author.id
 				#print(queryString + "\n")
@@ -476,7 +476,8 @@ async def on_message(message):
 					#task = loop.create_task(rollCard(rightNow))
 					#loop.run_until_complete(task)
 					getCard = random.randint(1, 1000)
-					if(getCard==1000):
+					#if(getCard==1000):
+					if True: # debug line atm
 						returnArray = await rollCard(rightNow, author, message, False, False)
 						replyMessage = ""
 						if(returnArray[1] == 0):
