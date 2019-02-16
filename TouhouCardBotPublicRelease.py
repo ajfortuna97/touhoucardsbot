@@ -234,7 +234,7 @@ async def on_message(message):
 			db.commit()
 			db.close()
 			#sys.exit()
-			client.close()
+			await client.logout()
 		
 	elif(message.content.startswith("!listcards")):
 		cardListString = "You have these cards:\n"
