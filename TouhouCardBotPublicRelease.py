@@ -232,7 +232,9 @@ async def on_message(message):
 		# if I use close() or logout() it throws a Task was destroyed but it is pending
 		if(message.author.id == '156819006395908096'):
 			db.commit()
-			sys.exit()
+			db.close()
+			#sys.exit()
+			client.close()
 		
 	elif(message.content.startswith("!listcards")):
 		cardListString = "You have these cards:\n"
@@ -261,6 +263,10 @@ async def on_message(message):
 				cardListString = cardListString + ", %s%d" % (nameOfCard, idOfCard)
 				amountOfCardsYouHave = amountOfCardsYouHave + 1
 			getAllYourCardsResult = cursor.fetchone()
+
+		if(amountOfCardsYouHave==0):
+			await client.send_message(message.channel, "You have no cards! D:")
+			return
 
 		await client.send_message(message.channel, '%s' % cardListString)
 
@@ -317,7 +323,8 @@ async def on_message(message):
 				checkCard = cursor.fetchone()
 
 				if(checkCard==None): # they don't have the card at all
-					print("You don't have this card.")
+					#print("You don't have this card.")
+					await client.send_message(message.channel, "You don't have this card.")
 				else:
 					# they do have the card here, so go and get it
 					#cardID = checkCard[0]
@@ -351,6 +358,7 @@ async def on_message(message):
 			cursor = db.cursor(buffered=True)
 			cursor.execute(updateLastDaily)
 			db.commit()	
+			await client.send_message(message.channel, "Daily points given.")
 		else:
 			getLastDailyUsage = getPointsResults[3] # is a datetime object
 			if(getLastDailyUsage == None):
@@ -379,9 +387,11 @@ async def on_message(message):
 					updateLastDaily = "UPDATE userlist SET lastdaily = \'%s\', points = \'%s\' WHERE user = \'%s\'" % (lastDailyTime, getPoints, author.id)
 					cursor = db.cursor(buffered=True)
 					cursor.execute(updateLastDaily)
-					db.commit()	
+					db.commit()
+					await client.send_message(message.channel, "Daily points given.")
 				else:
-					print("Already rolled for the day!")
+					#print("Already rolled for the day!")
+					await client.send_message(message.channel, "You already got your daily points!")
 	elif(message.content.startswith("!roll")):
 		if(await check_cost(message.author, message, 50)):
 			print("You have enough to roll once!")
@@ -395,6 +405,8 @@ async def on_message(message):
 				# card you got before
 				replyMessage = "You already have the %s card, refunding you %d points." % (returnArray[0], returnArray[1])
 			await client.send_message(message.channel, '%s' % replyMessage)
+		else:
+			await client.send_message("You don't have enough points to roll...")
 
 	elif(message.content.startswith("!10roll")):
 		if(await check_cost(message.author, message, 500)):
@@ -437,6 +449,8 @@ async def on_message(message):
 
 
 			await client.send_message(message.channel, '%s' % finalMessage)
+		else:
+			await client.send_message("You don't have enough points to roll...")
 		
 	else: # BIG MASSIVE LOOP ON ROLLING NEW CARDS RANDOMLY
 		author = message.author
