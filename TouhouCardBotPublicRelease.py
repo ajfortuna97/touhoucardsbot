@@ -440,7 +440,7 @@ async def on_message(message):
 					replyMessage = "You already have the %s card, refunding you %d points." % (returnArray[0], returnArray[1])
 				await client.send_message(message.channel, '%s' % replyMessage)
 			else:
-				await client.send_message("You don't have enough points to roll...")
+				await client.send_message(message.channel, "You don't have enough points to roll...")
 
 		elif(message.content.startswith("!10roll")):
 			if(await check_cost(message.author, message, 500)):
