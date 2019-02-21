@@ -493,7 +493,7 @@ async def on_message(message):
 				pass
 			else:
 				messageServer = message.server
-				if messageServer.id == '211120484731977728':  # this is to limit where the bot can go, you put your own server ID here 
+				if messageServer.id == '211120484731977728' or messageServer.id = '433279078322143234':  # this is to limit where the bot can go, you put your own server ID here 
 					# 1/1000 chance to get a card
 					queryString = "SELECT * FROM userlist WHERE user = " + author.id
 					#print(queryString + "\n")
