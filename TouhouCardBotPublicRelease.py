@@ -22,6 +22,7 @@ dbAddress = configReader.readline()
 dbPort = configReader.readline()
 dbDB = configReader.readline()
 botToken = configReader.readline()
+chanceForCard = configReader.readline()
 
 configReader.close()
 dbPass = dbPass.rstrip()
@@ -489,9 +490,9 @@ async def on_message(message):
 				if(difference.total_seconds() >= 0): # debugging line
 					#task = loop.create_task(rollCard(rightNow))
 					#loop.run_until_complete(task)
-					getCard = random.randint(1, 1000)
-					#if(getCard==1000):
-					if True: # debug line atm
+					getCard = random.randint(1, chanceForCard)
+					if(getCard==1):
+					#if True: # debug line atm
 						returnArray = await rollCard(rightNow, author, message, False, False)
 						replyMessage = ""
 						if(returnArray[1] == 0):
