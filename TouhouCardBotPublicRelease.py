@@ -29,9 +29,10 @@ dbPass = dbPass.rstrip()
 
 commandHelpReader = open("commands.config", "r")
 commandsList = []
-lines = commandHelpReader.readlines().rstrip()
+lines = commandHelpReader.readline().rstrip()
 while(lines):
 	commandsList.append(lines)
+	lines = commandHelpReader.readline().rstrip()
 commandHelpReader.close()
 
 db = mysql.connector.connect(user=dbUser, password=dbPass, host=dbAddress, port = dbPort, database = dbDB, auth_plugin='mysql_native_password')
