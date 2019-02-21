@@ -226,6 +226,8 @@ async def create_user(author):
 async def fetch_all_commands(message):
 	# we'll just use a big array of all our commands so we can just append to it
 	# and then just iterate over it
+	for x in commandsList:
+		await client.send_message(message.channel, x)
 
 
 @client.event
