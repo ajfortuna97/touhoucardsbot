@@ -22,7 +22,7 @@ dbAddress = configReader.readline()
 dbPort = configReader.readline()
 dbDB = configReader.readline()
 botToken = configReader.readline().rstrip()
-chanceForCard = configReader.readline()
+chanceForCard = int(configReader.readline())
 
 configReader.close()
 dbPass = dbPass.rstrip()
