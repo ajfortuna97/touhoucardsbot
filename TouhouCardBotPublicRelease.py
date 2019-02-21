@@ -241,7 +241,7 @@ async def on_message(message):
 	if not(db.is_connected()):
 		db = mysql.connector.connect(user=dbUser, password=dbPass, host=dbAddress, port = dbPort, database = dbDB, auth_plugin='mysql_native_password')
 
-	if author.id == '218794301893771264': # prevents bot from hitting its own messages
+	if message.author.id == '218794301893771264': # prevents bot from hitting its own messages
 		pass
 	else:
 		if(message.content.startswith("quit")):
