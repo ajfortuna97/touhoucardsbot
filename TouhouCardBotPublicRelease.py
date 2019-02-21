@@ -503,7 +503,7 @@ async def on_message(message):
 					#opLeaderName = str(topLeader[0])
 					#print("Checking to see if you are in the database.\n")
 					if(curUser == None): # need to insert
-						await create_user(author.id)
+						await create_user(author)
 					# if not there, then do nothing
 
 					#print("You are now in or were already in the database.\n")
