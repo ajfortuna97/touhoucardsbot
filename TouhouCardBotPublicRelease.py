@@ -472,6 +472,7 @@ async def on_message(message):
 						if dupeCards == 0:
 							replyMessageAlreadyHave = replyMessageAlreadyHave + entry[0]
 							dupeCards = dupeCards + 1
+							totalPoints = totalPoints + entry[1]
 						else:
 							replyMessageAlreadyHave = replyMessageAlreadyHave + ", %s" % entry[0]
 							dupeCards = dupeCards + 1
