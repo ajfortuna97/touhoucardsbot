@@ -27,6 +27,13 @@ chanceForCard = int(configReader.readline())
 configReader.close()
 dbPass = dbPass.rstrip()
 
+commandHelpReader = open("commands.config", "r")
+commandsList = []
+lines = commandHelpReader.readlines().rstrip()
+while(lines):
+	commandsList.append(lines)
+commandHelpReader.close()
+
 db = mysql.connector.connect(user=dbUser, password=dbPass, host=dbAddress, port = dbPort, database = dbDB, auth_plugin='mysql_native_password')
 
 # let's define the big list of people
@@ -216,6 +223,10 @@ async def create_user(author):
 	print("Added user.\n")
 	db.commit()
 
+async def fetch_all_commands(message):
+	# we'll just use a big array of all our commands so we can just append to it
+	# and then just iterate over it
+
 
 @client.event
 @asyncio.coroutine
@@ -393,6 +404,20 @@ async def on_message(message):
 				else:
 					#print("Already rolled for the day!")
 					await client.send_message(message.channel, "You already got your daily points!")
+	elif(message.content.startswith("!points")):
+		author = message.author
+		getPointsQuery = "SELECT points FROM userlist WHERE user = \'%s\'" % (author.id)
+		cursor = db.cursor(buffered=True)
+		cursor.execute(getPointsQuery)
+		getPointsResults = cursor.fetchone()
+
+		if(getPointsResults==None):
+			await create_user(author)
+			await client.send_message(message.channel, "You have 500 points.")
+		else:
+			await client.send_message(message.channel, "You have %d points!" % getPointsResults[0])
+	elif(message.content.startswith("!help")):
+		await fetch_all_commands(message)
 	elif(message.content.startswith("!roll")):
 		if(await check_cost(message.author, message, 50)):
 			print("You have enough to roll once!")
