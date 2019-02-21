@@ -21,7 +21,7 @@ dbPass = configReader.readline()
 dbAddress = configReader.readline()
 dbPort = configReader.readline()
 dbDB = configReader.readline()
-botToken = configReader.readline()
+botToken = configReader.readline().rstrip()
 chanceForCard = configReader.readline()
 
 configReader.close()
