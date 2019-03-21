@@ -44,9 +44,18 @@ async def artRoleList(message, roleExceptions, client):
 	validRoleCount = len(allRoles) - len(roleExceptions)
 	print(validRoleCount)
 
+	rolesToDisplay = []
+
 	for x in allRoles:
 		if x.name not in roleExceptions and x.name != "@everyone":
-			stringToDisplay = stringToDisplay + x.name + ", "
+			#stringToDisplay = stringToDisplay + x.name + ", "
+			rolesToDisplay.append(x.name)
+
+	rolesToDisplay = rolesToDisplay.sort()
+
+	for x in rolesToDisplay:
+		stringToDisplay = stringToDisplay + x.name + ", "
+
 
 	stringToDisplay = stringToDisplay[:-2]
 
