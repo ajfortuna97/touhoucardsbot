@@ -38,7 +38,7 @@ while(lines):
 commandHelpReader.close()
 
 db = mysql.connector.connect(user=dbUser, password=dbPass, host=dbAddress, port = dbPort, database = dbDB, auth_plugin='mysql_native_password')
-roleExceptions = ["Master", "Jedi Council", "t!fish", "Dyno", "Tatsumaki", "Extra Stage Boss", "Stage 6 Boss", "Stage 5 Boss", "Stage 4 Boss", "Stage 3 Boss", "Stage 2 Boss", "Stage 1 Boss", "PC-98 Garbage", "TenshiBost", "Rythm", "new role", "@everyone", "Art Manager"]
+roleExceptions = ["Master", "Jedi Council", "t!fish", "Dyno", "Tatsumaki", "Extra Stage Boss", "Stage 6 Boss", "Stage 5 Boss", "Stage 4 Boss", "Stage 3 Boss", "Stage 2 Boss", "Stage 1 Boss", "PC-98 Garbage", "TenshiBost", "Rythm", "new role", "@everyone", "Art Manager", "menreiki"]
 
 # let's define the big list of people
 touhouCharList = ['alice', 'aya', 'byakuren', 'chen', 'cirno', 'clownpiece', 'daiyousei', 'eirin', 'flandre', 'hina', 'junko', 'kaguya', 'kanako', 'keine', 'koakuma', 'kogasa', 'koishi', 'kokoro', 'komachi', 'letty', 'marisa', 'meiling', 'mima', 'mokou', 'momiji', 'mystia', 'nitori', 'nue', 'parsee', 'patchy', 'ran', 'reimu', 'reisen', 'remilia', 'rinnosuke', 'rumia', 'sakuya', 'sanae', 'satori', 'shiki', 'shin', 'suwako', 'tancirno', 'tewi', 'utsuho', 'wriggle', 'youki', 'youmu', 'yukari', 'yuuka', 'yuyuko', 'zun']
