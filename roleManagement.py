@@ -54,7 +54,7 @@ async def artRoleList(message, roleExceptions, client):
 	rolesToDisplay.sort()
 
 	for x in rolesToDisplay:
-		stringToDisplay = stringToDisplay + x.name + ", "
+		stringToDisplay = stringToDisplay + x + ", "
 
 
 	stringToDisplay = stringToDisplay[:-2]
