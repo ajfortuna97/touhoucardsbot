@@ -502,9 +502,9 @@ async def on_message(message):
 			if(difference.seconds < 60):
 				await client.send_message(message.channel, "The bot has been active for less than a minute.")
 			elif(difference.seconds < 3600):
-				await client.send_message(message.channel, "The bot has been active for %d minutes." % (difference/60))
+				await client.send_message(message.channel, "The bot has been active for %d minutes." % (difference.seconds/60))
 			elif(difference.seconds < 86400):
-				await client.send_message(message.channel, "The bot has been active for %d hours." % (difference/3600))
+				await client.send_message(message.channel, "The bot has been active for %d hours." % (difference.seconds/3600))
 			else:
 				await client.send_message(message.channel, "It has been %d days since the bot went down." % difference.days)
 
