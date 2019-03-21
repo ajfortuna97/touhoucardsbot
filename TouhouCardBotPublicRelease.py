@@ -244,7 +244,8 @@ async def on_message(message):
 	print("Got message.")
 	# TODO: Add code to reconnect if bot goes too long without hitting server
 	if not(db.is_connected()):
-		db = mysql.connector.connect(user=dbUser, password=dbPass, host=dbAddress, port = dbPort, database = dbDB, auth_plugin='mysql_native_password')
+		#db = mysql.connector.connect(user=dbUser, password=dbPass, host=dbAddress, port = dbPort, database = dbDB, auth_plugin='mysql_native_password')
+		db.reconnect(attempts=1, delay=0)
 
 	if message.author.id == '218794301893771264': # prevents bot from hitting its own messages
 		pass
