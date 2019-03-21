@@ -11,6 +11,7 @@ from datetime import datetime
 import sys
 import mysql
 import mysql.connector
+from roleManagement import *
 
 client = discord.Client()
 
@@ -26,6 +27,7 @@ chanceForCard = int(configReader.readline())
 
 configReader.close()
 dbPass = dbPass.rstrip()
+timeStarted = datetime.now()
 
 commandHelpReader = open("commands.config", "r")
 commandsList = []
@@ -36,6 +38,7 @@ while(lines):
 commandHelpReader.close()
 
 db = mysql.connector.connect(user=dbUser, password=dbPass, host=dbAddress, port = dbPort, database = dbDB, auth_plugin='mysql_native_password')
+roleExceptions = ["Master", "Jedi Council", "t!fish", "Dyno", "Tatsumaki", "Extra Stage Boss", "Stage 6 Boss", "Stage 5 Boss", "Stage 4 Boss", "Stage 3 Boss", "Stage 2 Boss", "Stage 1 Boss", "PC-98 Garbage", "TenshiBost", "Rythm", "new role", "@everyone"]
 
 # let's define the big list of people
 touhouCharList = ['alice', 'aya', 'byakuren', 'chen', 'cirno', 'clownpiece', 'daiyousei', 'eirin', 'flandre', 'hina', 'junko', 'kaguya', 'kanako', 'keine', 'koakuma', 'kogasa', 'koishi', 'kokoro', 'komachi', 'letty', 'marisa', 'meiling', 'mima', 'mokou', 'momiji', 'mystia', 'nitori', 'nue', 'parsee', 'patchy', 'ran', 'reimu', 'reisen', 'remilia', 'rinnosuke', 'rumia', 'sakuya', 'sanae', 'satori', 'shiki', 'shin', 'suwako', 'tancirno', 'tewi', 'utsuho', 'wriggle', 'youki', 'youmu', 'yukari', 'yuuka', 'yuyuko', 'zun']
@@ -487,6 +490,23 @@ async def on_message(message):
 			else:
 				await client.send_message("You don't have enough points to roll...")
 			
+		elif(message.content.startswith("!artrole")):
+			await toggleMeToRole(message, roleExceptions, client)
+		elif(message.content.startswith("!listartroles")):
+			await artRoleList(message, roleExceptions, client)
+		elif(message.content.startswith("!status")):
+			curTime = datetime.now()
+			difference = abs(curTime - timeStarted)
+
+			if(difference.seconds < 60):
+				await client.send_message(message.channel, "The bot has been active for less than a minute.")
+			elif(difference.seconds < 3600):
+				await client.send_message(message.channel, "The bot has been active for %d minutes." % (difference/60))
+			elif(difference.seconds < 86400):
+				await client.send_message(message.channel, "The bot has been active for %d hours." % (difference/3600))
+			else:
+				await client.send_message(message.channel, "It has been %d days since the bot went down." % difference.days)
+
 		else: # BIG MASSIVE LOOP ON ROLLING NEW CARDS RANDOMLY
 			author = message.author
 			if author.id == '218794301893771264': # prevents bot from hitting its own messages
@@ -540,6 +560,7 @@ async def on_message(message):
 
 def main():
 	print("Executing main method.")
+
 	client.run(botToken)
 	db.commit()
 	db.close()
