@@ -39,8 +39,6 @@ async def artRoleList(message, roleExceptions, client):
 	messageServer = message.server
 	allRoles = messageServer.roles
 
-	roleExceptions = ["Test"]
-
 	stringToDisplay = "The following roles are available:\n"
 
 	validRoleCount = len(allRoles) - len(roleExceptions)
